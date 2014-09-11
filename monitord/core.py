@@ -43,24 +43,32 @@ def web_applications_from_config(config_file):
 def check_processes(processes):
     """Loop forever, checking the status of *processes* every 5 seconds."""
     LOGGER.info('Beginning process checks')
+    failed_processes = set()
+    suppress_email = False
     while True:
         for process in processes:
+            if process in failed_processes:
+                suppress_email = True
             LOGGER.info('Starting check for process [{}]'.format(process.name))
-            if not process.passes_checks():
+            if not process.passes_checks(suppress_email):
                 LOGGER.error('Process [{}] failed status check'.format(
                     process.name))
+                failed_processes.add(process)
             else:
-                LOGGER.debug('Process [{}] passed status check'.format(
+                LOGGER.info('Process [{}] passed status check'.format(
                     process.name))
+                if process in failed_processes:
+                    del failed_processes[process]
 
         time.sleep(5)
 
 
-def check_applications(applications):
-    """Loop forever, checking the status of *applications* every 5 seconds."""
-    LOGGER.info('Beginning application checks')
+def check_web_applications(web_applications):
+    """Loop forever, checking the status of *web_applications* every
+    5 seconds."""
+    LOGGER.info('Beginning web application checks')
     while True:
-        for application in applications:
+        for application in web_applications:
             LOGGER.info(
                 'Starting check for process [{}]'.format(application.name))
             if not application.passes_checks():
@@ -68,7 +76,7 @@ def check_applications(applications):
                     'Process [{}] failed status check'.format(
                         application.name))
             else:
-                LOGGER.debug(
+                LOGGER.info(
                     'Process [{}] passed status check'.format(
                         application.name))
         time.sleep(5)

@@ -7,7 +7,7 @@ from monitord.core import (
     web_applications_from_config,
     processes_from_config,
     check_processes,
-    check_applications
+    check_web_applications
     )
 
 
@@ -17,12 +17,12 @@ def main(args):
     web_applications = web_applications_from_config(config_file)
     processes = processes_from_config(config_file)
     application_thread = threading.Thread(
-        target=check_applications, args=(web_applications,))
+        target=check_web_applications, args=(web_applications,))
     process_thread = threading.Thread(
         target=check_processes, args=(processes,))
 
-    application_thread.run()
-    process_thread.run()
+    application_thread.start()
+    process_thread.start()
 
     application_thread.join()
     process_thread.join()
